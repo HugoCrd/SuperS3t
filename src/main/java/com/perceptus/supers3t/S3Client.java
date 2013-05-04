@@ -2,6 +2,7 @@ package com.perceptus.supers3t;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
@@ -10,7 +11,7 @@ import org.vertx.java.core.http.HttpClientResponse;
 public class S3Client {
     public static final String DEFAULT_ENDPOINT = "s3.amazonaws.com";
 
-    private static final Vertx vertx            = Vertx.newVertx();
+    private static final Vertx vertx = VertxFactory.newVertx();
 
     private final String       awsAccessKey;
     private final String       awsSecretKey;
@@ -75,7 +76,7 @@ public class S3Client {
             createPutRequest(String bucket,
                              String key,
                              Handler<HttpClientResponse> handler) {
-        HttpClientRequest httpRequest = client.put("/" + bucket + "/" + key,
+        HttpClientRequest httpRequest = client.put("/" + key,
                                                    handler);
         return new S3ClientRequest("PUT",
                                    bucket,
@@ -90,7 +91,7 @@ public class S3Client {
             createGetRequest(String bucket,
                              String key,
                              Handler<HttpClientResponse> handler) {
-        HttpClientRequest httpRequest = client.get("/" + bucket + "/" + key,
+        HttpClientRequest httpRequest = client.get("/" + key,
                                                    handler);
         return new S3ClientRequest("GET",
                                    bucket,
@@ -105,7 +106,7 @@ public class S3Client {
             createDeleteRequest(String bucket,
                                 String key,
                                 Handler<HttpClientResponse> handler) {
-        HttpClientRequest httpRequest = client.delete("/" + bucket + "/" + key,
+        HttpClientRequest httpRequest = client.delete("/" + key,
                                                       handler);
         return new S3ClientRequest("DELETE",
                                    bucket,

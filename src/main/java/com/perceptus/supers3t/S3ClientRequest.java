@@ -1,23 +1,27 @@
 package com.perceptus.supers3t;
 
+import io.netty.handler.codec.http.HttpHeaders;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.Map;
+import java.util.Locale;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.impl.ws.Base64;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 public class S3ClientRequest implements HttpClientRequest {
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
     private static final Logger           logger     = LoggerFactory.getLogger(S3ClientRequest.class);
 
     private final HttpClientRequest       request;
@@ -69,40 +73,36 @@ public class S3ClientRequest implements HttpClientRequest {
         this.contentType = contentType;
     }
 
-    @Override public void writeBuffer(Buffer data) {
-        request.writeBuffer(data);
+    @Override public HttpClientRequest write(Buffer data) {
+        return request.write(data);
     }
 
-    @Override public void setWriteQueueMaxSize(int maxSize) {
-        request.setWriteQueueMaxSize(maxSize);
+    @Override public HttpClientRequest setWriteQueueMaxSize(int maxSize) {
+        return request.setWriteQueueMaxSize(maxSize);
     }
 
     @Override public boolean writeQueueFull() {
         return request.writeQueueFull();
     }
 
-    @Override public void drainHandler(Handler<Void> handler) {
-        request.drainHandler(handler);
+    @Override public HttpClientRequest drainHandler(Handler<Void> handler) {
+        return request.drainHandler(handler);
     }
 
-    @Override public void exceptionHandler(Handler<Exception> handler) {
-        request.exceptionHandler(handler);
+    @Override public HttpClientRequest exceptionHandler(Handler<Throwable> handler) {
+        return request.exceptionHandler(handler);
     }
 
     @Override public HttpClientRequest setChunked(boolean chunked) {
         return request.setChunked(chunked);
     }
 
-    @Override public Map<String, Object> headers() {
+    @Override public MultiMap headers() {
         return request.headers();
     }
 
-    @Override public HttpClientRequest putHeader(String name, Object value) {
+    @Override public HttpClientRequest putHeader(String name, String value) {
         return request.putHeader(name, value);
-    }
-
-    @Override public HttpClientRequest write(Buffer chunk) {
-        return request.write(chunk);
     }
 
     @Override public HttpClientRequest write(String chunk) {
@@ -113,24 +113,8 @@ public class S3ClientRequest implements HttpClientRequest {
         return request.write(chunk, enc);
     }
 
-    @Override public HttpClientRequest write(Buffer chunk,
-                                             Handler<Void> doneHandler) {
-        return request.write(chunk, doneHandler);
-    }
-
-    @Override public HttpClientRequest write(String chunk,
-                                             Handler<Void> doneHandler) {
-        return request.write(chunk, doneHandler);
-    }
-
-    @Override public HttpClientRequest write(String chunk,
-                                             String enc,
-                                             Handler<Void> doneHandler) {
-        return request.write(chunk, enc, doneHandler);
-    }
-
-    @Override public void continueHandler(Handler<Void> handler) {
-        request.continueHandler(handler);
+    @Override public HttpClientRequest continueHandler(Handler<Void> handler) {
+        return request.continueHandler(handler);
     }
 
     @Override public HttpClientRequest sendHead() {
@@ -163,6 +147,23 @@ public class S3ClientRequest implements HttpClientRequest {
         initAuthenticationHeader();
         request.end();
     }
+    
+
+	@Override
+	public HttpClientRequest putHeader(String name, Iterable<String> values) {
+		 return request.putHeader(name, values);
+	}
+
+	@Override
+	public HttpClientRequest setTimeout(long timeoutMs) {
+		return request.setTimeout(timeoutMs);
+	}
+	
+
+	@Override
+	public boolean isChunked() {
+		return request.isChunked();
+	}
 
     protected void initAuthenticationHeader() {
         if (isAuthenticated()) {
@@ -176,7 +177,7 @@ public class S3ClientRequest implements HttpClientRequest {
             // We can't risk letting our date get clobbered and being
             // inconsistent
             String xamzdate = currentDateString();
-            headers().put("X-Amz-Date", xamzdate);
+            putHeader("X-Amz-Date", xamzdate);
 
             String canonicalizedAmzHeaders = "x-amz-date:" + xamzdate + "\n";
             String canonicalizedResource = "/" + bucket + "/" + key;
@@ -198,12 +199,10 @@ public class S3ClientRequest implements HttpClientRequest {
                 signature = "ERRORSIGNATURE";
                 // This will totally fail,
                 // but downstream users can handle it
-                logger.error("Failed to sign S3 request due to " + e);
             }
             String authorization = "AWS" + " " + awsAccessKey + ":" + signature;
-
             // Put that nasty auth string in the headers and let vert.x deal
-            headers().put("Authorization", authorization);
+            putHeader(HttpHeaders.Names.AUTHORIZATION, authorization);
         }
         // Otherwise not needed
     }
@@ -253,4 +252,5 @@ public class S3ClientRequest implements HttpClientRequest {
     private static String currentDateString() {
         return dateFormat.format(new Date());
     }
+
 }

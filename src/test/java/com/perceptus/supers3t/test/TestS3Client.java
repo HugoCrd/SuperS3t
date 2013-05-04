@@ -59,12 +59,12 @@ public class TestS3Client {
 
                            @Override public void
                                    handle(HttpClientResponse event) {
-                               responseCode.set(event.statusCode);
-                               if (event.statusCode != 200) {
+                               responseCode.set(event.statusCode());
+                               if (event.statusCode() != 200) {
                                    synchronized (responseBody) {
                                        // This is a failed request
                                        logger.error("Bad response: "
-                                                    + event.statusCode);
+                                                    + event.statusCode());
                                        responseBody.notify();
                                    }
                                    return;
@@ -115,7 +115,7 @@ public class TestS3Client {
                            @Override public void
                                    handle(HttpClientResponse event) {
                                synchronized (responseCode) {
-                                   responseCode.set(event.statusCode);
+                                   responseCode.set(event.statusCode());
                                    responseCode.notify();
                                }
                            }
@@ -148,7 +148,7 @@ public class TestS3Client {
                               @Override public void
                                       handle(HttpClientResponse event) {
                                   synchronized (responseCode) {
-                                      responseCode.set(event.statusCode);
+                                      responseCode.set(event.statusCode());
                                       responseCode.notify();
                                   }
                               }
@@ -182,10 +182,10 @@ public class TestS3Client {
                                                                   @Override public void
                                                                           handle(HttpClientResponse event) {
                                                                       logger.info("Response message: "
-                                                                                  + event.statusMessage);
+                                                                                  + event.statusMessage());
 
                                                                       synchronized (responseCode) {
-                                                                          responseCode.set(event.statusCode);
+                                                                          responseCode.set(event.statusCode());
                                                                           responseCode.notify();
                                                                       }
                                                                   }
@@ -222,8 +222,8 @@ public class TestS3Client {
 
                                                                   @Override public void
                                                                           handle(HttpClientResponse event) {
-                                                                      responseCode.set(event.statusCode);
-                                                                      if (event.statusCode != 200) {
+                                                                      responseCode.set(event.statusCode());
+                                                                      if (event.statusCode() != 200) {
                                                                           synchronized (responseBody) {
                                                                               // This
                                                                               // is
@@ -231,7 +231,7 @@ public class TestS3Client {
                                                                               // failed
                                                                               // request
                                                                               logger.error("Bad response: "
-                                                                                           + event.statusCode);
+                                                                                           + event.statusCode());
                                                                               responseBody.notify();
                                                                           }
                                                                           return;
@@ -291,7 +291,7 @@ public class TestS3Client {
                                                                      @Override public void
                                                                              handle(HttpClientResponse event) {
                                                                          synchronized (responseCode) {
-                                                                             responseCode.set(event.statusCode);
+                                                                             responseCode.set(event.statusCode());
                                                                              responseCode.notify();
                                                                          }
                                                                      }
