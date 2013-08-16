@@ -28,6 +28,7 @@ public class TestS3Client {
 
     private static final String accessKey      = "";
     private static final String secretKey      = "";
+    private static final String endpoint       = "";
 
     private static final String testBucket     = "Perceptus";
 
@@ -37,7 +38,10 @@ public class TestS3Client {
      * @throws java.lang.Exception
      */
     @Before public void setUp() throws Exception {
-        client = new S3Client(accessKey, secretKey);
+    	if (endpoint.isEmpty())
+    		client = new S3Client(accessKey, secretKey);
+    	else 
+    		client = new S3Client(accessKey, secretKey, endpoint);
     }
 
     /**
