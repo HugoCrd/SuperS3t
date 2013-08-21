@@ -21,4 +21,4 @@ test-tmp
 *.class
 /mods
 *~
-restartApp
+.project
